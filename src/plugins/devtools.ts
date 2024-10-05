@@ -20,7 +20,9 @@ export class Devtools implements Module {
 
   initialize(editor: Editor) {
     this.unsubscribe = editor.subscribe(() => {
-      this.render(editor.getHistory().toJSON());
+      this.render(
+        `v:${editor.getModel().getValue()}\nh:${editor.getHistory().toJSON()}`,
+      );
     });
   }
 

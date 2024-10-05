@@ -114,6 +114,10 @@ export class Editor extends Observable<Array<Command>> implements Module {
     }
   }
 
+  getModel(): Model {
+    return this.model;
+  }
+
   getHistory(): History<Command> {
     return this.history;
   }

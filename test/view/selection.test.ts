@@ -1,41 +1,27 @@
 import { describe, expect, it } from 'vitest';
-import { toRange } from '../../src/view/selection';
+import { offsetOf } from '../../src/view/selection';
 
-describe('toRange', () => {
-  it('should convert to the range', () => {
-    const container = document.createElement('div');
-    container.innerHTML = 'Hello, World!';
-
-    const range = document.createRange();
-    range.setStart(container.firstChild!, 1);
-    range.setEnd(container.firstChild!, 4);
-
-    const result = toRange(range, container);
-    expect(result).toEqual({ s: 1, e: 4 });
+describe('offsetOf', () => {
+  it('should convert to the given position', () => {
+    const d = document.createElement('div');
+    d.innerHTML = 'Hello World!';
+    expect(offsetOf([d.firstChild!, 1], d)).toEqual(1);
   });
 
-  it('should convert to the range in the nested element', () => {
-    const container = document.createElement('div');
-    container.innerHTML = 'Hello, <b>World</b>!';
-
-    const range = document.createRange();
-    range.setStart(container.firstChild!, 1);
-    range.setEnd(container.querySelector('b')!.firstChild!, 2);
-
-    const result = toRange(range, container);
-    expect(result).toEqual({ s: 1, e: 9 });
+  it('should convert to the given position in element', () => {
+    const d = document.createElement('div');
+    d.innerHTML = '<b>Hello</b> <i>World</i>!';
+    expect(offsetOf([d.querySelector('b')!.firstChild!, 0], d)).toEqual(1);
+    expect(offsetOf([d.querySelector('i')!.firstChild!, 0], d)).toEqual(9);
+    expect(offsetOf([d.querySelector('i')!.firstChild!, 1], d)).toEqual(10);
+    expect(offsetOf([d.querySelector('i')!.nextSibling!, 0], d)).toEqual(15);
   });
 
   it('should return error if the range is not in the container', () => {
-    const container = document.createElement('div');
-    container.innerHTML = 'Hello, World!';
-
-    const range = document.createRange();
-    range.setStart(container.firstChild!, 1);
-    range.setEnd(container.firstChild!, 4);
-
-    expect(() => toRange(range, document.createElement('div'))).toThrowError(
-      'node is not in the container',
-    );
+    const d = document.createElement('div');
+    d.innerHTML = 'Hello World!';
+    expect(() =>
+      offsetOf([d.firstChild!, 4], document.createElement('div')),
+    ).toThrowError('node is not in the container');
   });
 });

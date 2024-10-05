@@ -34,6 +34,7 @@ export class View extends Observable<Command> implements Module {
 
   handleBeforeInput(event: InputEvent) {
     const text = this.getTextFromEvent(event);
+    // TODO(hackerwins): We need to capture enter key as well.
     const range = toRange(event.getTargetRanges()[0], this.container);
     this.notify({
       t: 'e',
