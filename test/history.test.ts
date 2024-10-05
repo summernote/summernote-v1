@@ -2,43 +2,43 @@ import { describe, it, expect } from 'vitest';
 import { History } from '../src/history';
 
 type CounterCommand =
-  | { type: 'inc'; payload: { value: number } }
-  | { type: 'dec'; payload: { value: number } };
+  | { type: 'inc'; value: number }
+  | { type: 'dec'; value: number };
 
 function execute(command: CounterCommand): CounterCommand {
   if (command.type === 'inc') {
-    return { type: 'dec', payload: { value: command.payload.value } };
+    return { type: 'dec', value: command.value };
   }
 
-  return { type: 'inc', payload: { value: command.payload.value } };
+  return { type: 'inc', value: command.value };
 }
 
 describe('history', () => {
   it('should undo and redo commands', () => {
     const history = new History<CounterCommand>(execute);
 
-    history.push({ type: 'inc', payload: { value: 1 } });
-    history.push({ type: 'inc', payload: { value: 2 } });
+    history.push({ type: 'inc', value: 1 });
+    history.push({ type: 'inc', value: 2 });
 
-    expect(history.undo()).toEqual({ type: 'dec', payload: { value: 2 } });
-    expect(history.undo()).toEqual({ type: 'dec', payload: { value: 1 } });
+    expect(history.undo()).toEqual({ type: 'dec', value: 2 });
+    expect(history.undo()).toEqual({ type: 'dec', value: 1 });
     expect(history.undo()).toBeUndefined();
 
-    expect(history.redo()).toEqual({ type: 'inc', payload: { value: 1 } });
-    expect(history.redo()).toEqual({ type: 'inc', payload: { value: 2 } });
+    expect(history.redo()).toEqual({ type: 'inc', value: 1 });
+    expect(history.redo()).toEqual({ type: 'inc', value: 2 });
     expect(history.redo()).toBeUndefined();
   });
 
   it('should serialize and deserialize history', () => {
     const history = new History<CounterCommand>(execute);
 
-    history.push({ type: 'inc', payload: { value: 1 } });
-    history.push({ type: 'inc', payload: { value: 2 } });
+    history.push({ type: 'inc', value: 1 });
+    history.push({ type: 'inc', value: 2 });
     expect(history.toJSON()).toEqual(
       JSON.stringify({
         undos: [
-          { type: 'inc', payload: { value: 1 } },
-          { type: 'inc', payload: { value: 2 } },
+          { type: 'inc', value: 1 },
+          { type: 'inc', value: 2 },
         ],
         redos: [],
       }),
@@ -47,8 +47,8 @@ describe('history', () => {
     history.undo();
     expect(history.toJSON()).toEqual(
       JSON.stringify({
-        undos: [{ type: 'inc', payload: { value: 1 } }],
-        redos: [{ type: 'dec', payload: { value: 2 } }],
+        undos: [{ type: 'inc', value: 1 }],
+        redos: [{ type: 'dec', value: 2 }],
       }),
     );
 
@@ -57,8 +57,8 @@ describe('history', () => {
       JSON.stringify({
         undos: [],
         redos: [
-          { type: 'dec', payload: { value: 2 } },
-          { type: 'dec', payload: { value: 1 } },
+          { type: 'dec', value: 2 },
+          { type: 'dec', value: 1 },
         ],
       }),
     );
@@ -66,8 +66,8 @@ describe('history', () => {
     history.redo();
     expect(history.toJSON()).toEqual(
       JSON.stringify({
-        undos: [{ type: 'inc', payload: { value: 1 } }],
-        redos: [{ type: 'dec', payload: { value: 2 } }],
+        undos: [{ type: 'inc', value: 1 }],
+        redos: [{ type: 'dec', value: 2 }],
       }),
     );
   });

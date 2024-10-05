@@ -25,4 +25,17 @@ describe('toRange', () => {
     const result = toRange(range, container);
     expect(result).toEqual({ s: 1, e: 9 });
   });
+
+  it('should return error if the range is not in the container', () => {
+    const container = document.createElement('div');
+    container.innerHTML = 'Hello, World!';
+
+    const range = document.createRange();
+    range.setStart(container.firstChild!, 1);
+    range.setEnd(container.firstChild!, 4);
+
+    expect(() => toRange(range, document.createElement('div'))).toThrowError(
+      'node is not in the container',
+    );
+  });
 });
