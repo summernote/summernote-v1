@@ -1,9 +1,13 @@
 import { Editor } from '../editor';
 import { Module } from '../utils/module';
 
+type ToolbarOptions = {
+  buttons: Array<string>;
+};
+
 export class Toolbar implements Module {
   private container: HTMLDivElement;
-  private options: { buttons: Array<string> };
+  private opts: ToolbarOptions;
   private editor?: Editor;
 
   static create(
@@ -13,9 +17,9 @@ export class Toolbar implements Module {
     return new Toolbar(container, options || { buttons: [] });
   }
 
-  constructor(container: HTMLDivElement, options: { buttons: Array<string> }) {
+  constructor(container: HTMLDivElement, opts: ToolbarOptions) {
     this.container = container;
-    this.options = options;
+    this.opts = opts;
     this.handleButtonClick = this.handleButtonClick.bind(this);
   }
 
@@ -31,7 +35,7 @@ export class Toolbar implements Module {
   }
 
   render() {
-    for (const button of this.options.buttons) {
+    for (const button of this.opts.buttons) {
       const element = document.createElement('button');
       element.setAttribute('data-type', button);
       element.innerText = button;

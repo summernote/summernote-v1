@@ -6,22 +6,18 @@ export type Command = SetValue | Edit;
  * `SetValue` is a command that sets the value of the model.
  */
 export type SetValue = {
-  t: 'setValue';
-  p: {
-    v: string;
-  };
+  t: 'v';
+  v: string;
 };
 
 /**
  * `Edit` is a command that edits the value of the model.
  */
 export type Edit = {
-  t: 'edit';
-  p: {
-    f: number;
-    t: number;
-    v: string;
-  };
+  t: 'e';
+  s: number;
+  e: number;
+  v: string;
 };
 
 /**
@@ -29,23 +25,21 @@ export type Edit = {
  */
 export function execute(model: Model, command: Command): Command {
   switch (command.t) {
-    case 'setValue':
+    case 'v':
       let prevValue = model.getValue();
-      model.setValue(command.p.v);
+      model.setValue(command.v);
       return {
-        t: 'setValue',
-        p: { v: prevValue },
+        t: 'v',
+        v: prevValue,
       };
-    case 'edit':
-      let value = model.getValue(command.p.f, command.p.t);
-      model.edit(command.p.f, command.p.t, command.p.v);
+    case 'e':
+      let value = model.getValue(command.s, command.e);
+      model.edit(command.s, command.e, command.v);
       return {
-        t: 'edit',
-        p: {
-          f: command.p.f,
-          t: command.p.f + command.p.v.length,
-          v: value,
-        },
+        t: 'e',
+        s: command.s,
+        e: command.s + command.v.length,
+        v: value,
       };
       break;
     default:

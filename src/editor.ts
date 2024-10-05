@@ -2,9 +2,9 @@ import { History } from './history';
 import { Module } from './utils/module';
 import { Observable, Unsubscribe } from './utils/observable';
 
-import { TextView } from './text/view';
-import { Model } from './text/model';
-import { Command, execute } from './text/commands';
+import { View as View } from './view/view';
+import { Model } from './model';
+import { Command, execute } from './commands';
 
 /**
  * `EditorOptions` is an object that contains the initial value of the editor
@@ -19,8 +19,8 @@ type EditorOptions = {
  * `Editor` is the main class that connects the view and the model. It also
  * initializes the plugins and handles the commands.
  */
-export class Editor extends Observable<Command> implements Module {
-  private view: TextView;
+export class Editor extends Observable<Array<Command>> implements Module {
+  private view: View;
   private model: Model;
   private history: History<Command>;
   private unsubscribes: Array<Unsubscribe>;
@@ -28,24 +28,24 @@ export class Editor extends Observable<Command> implements Module {
 
   private plugins: Array<Module>;
 
-  static create(container: HTMLDivElement, options: EditorOptions = {}) {
-    const editor = new Editor(container, options);
+  static create(container: HTMLDivElement, opts: EditorOptions = {}) {
+    const editor = new Editor(container, opts);
     editor.initialize();
     return editor;
   }
 
-  constructor(container: HTMLDivElement, options: EditorOptions) {
+  constructor(container: HTMLDivElement, opts: EditorOptions) {
     super();
 
-    this.view = TextView.create(container);
-    this.model = new Model(options.initialValue || '');
+    this.view = View.create(container);
+    this.model = new Model(opts.initialValue || '');
     this.history = new History<Command>((command) =>
       execute(this.model, command),
     );
     this.unsubscribes = [];
     this.isUpstream = false;
 
-    this.plugins = options.plugins || [];
+    this.plugins = opts.plugins || [];
   }
 
   initialize() {
@@ -91,23 +91,26 @@ export class Editor extends Observable<Command> implements Module {
     }
   }
 
-  execute(command: Command) {
-    const inverse = execute(this.model, command);
-    this.history.push(inverse);
-    this.notify(command);
+  execute(...commands: Array<Command>) {
+    for (const c of commands) {
+      const inverse = execute(this.model, c);
+      this.history.push(inverse);
+    }
+
+    this.notify(commands);
   }
 
   undo() {
     const command = this.history.undo();
     if (command) {
-      this.notify(command);
+      this.notify([command]);
     }
   }
 
   redo() {
     const command = this.history.redo();
     if (command) {
-      this.notify(command);
+      this.notify([command]);
     }
   }
 
@@ -115,21 +118,15 @@ export class Editor extends Observable<Command> implements Module {
     return this.history;
   }
 
-  getModel(): Model {
-    return this.model;
-  }
-
   /**
    * TODO(hackerwins): Find a better way to provide APIs.
    */
   insertText(text: string) {
     this.execute({
-      t: 'edit',
-      p: {
-        f: this.model.getValue().length,
-        t: this.model.getValue().length,
-        v: text,
-      },
+      t: 'e',
+      s: this.model.getValue().length,
+      e: this.model.getValue().length,
+      v: text,
     });
   }
 }
