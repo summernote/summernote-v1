@@ -1,55 +1,52 @@
-import { TextModel } from './model';
+import { Model } from './model';
 
 export type Command = SetValue | Edit;
 
+/**
+ * `SetValue` is a command that sets the value of the model.
+ */
 export type SetValue = {
-  type: 'setValue';
-  payload: {
-    value: string;
-    oldValue?: string;
+  t: 'setValue';
+  p: {
+    v: string;
   };
 };
 
+/**
+ * `Edit` is a command that edits the value of the model.
+ */
 export type Edit = {
-  type: 'edit';
-  payload: {
-    from: number;
-    to: number;
-    value: string;
+  t: 'edit';
+  p: {
+    f: number;
+    t: number;
+    v: string;
   };
 };
 
 /**
- * `execute` executes the command on the model.
+ * `execute` executes the command on the model and returns inverse command.
  */
-export function execute(model: TextModel, command: Command): void {
-  switch (command.type) {
+export function execute(model: Model, command: Command): Command {
+  switch (command.t) {
     case 'setValue':
-      command.payload.oldValue = model.getValue();
-      model.setValue(command.payload.value);
-      break;
+      let prevValue = model.getValue();
+      model.setValue(command.p.v);
+      return {
+        t: 'setValue',
+        p: { v: prevValue },
+      };
     case 'edit':
-      model.edit(
-        command.payload.from,
-        command.payload.to,
-        command.payload.value,
-      );
-      break;
-    default:
-      throw new Error(`Unknown command type: ${JSON.stringify(command)}`);
-  }
-}
-
-/**
- * `undo` undoes the command on the model. It is the inverse of `execute`.
- */
-export function undo(model: TextModel, command: Command): void {
-  switch (command.type) {
-    case 'setValue':
-      model.setValue(command.payload.oldValue || '');
-      break;
-    case 'edit':
-      throw new Error('Unimplemented');
+      let value = model.getValue(command.p.f, command.p.t);
+      model.edit(command.p.f, command.p.t, command.p.v);
+      return {
+        t: 'edit',
+        p: {
+          f: command.p.f,
+          t: command.p.f + command.p.v.length,
+          v: value,
+        },
+      };
       break;
     default:
       throw new Error(`Unknown command type: ${JSON.stringify(command)}`);

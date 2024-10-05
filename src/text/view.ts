@@ -21,8 +21,8 @@ export class TextView extends Observable<Command> implements Module {
 
   handleInput() {
     this.notify({
-      type: 'setValue',
-      payload: { value: this.getValue() },
+      t: 'setValue',
+      p: { v: this.getValue() },
     });
   }
 
@@ -31,6 +31,7 @@ export class TextView extends Observable<Command> implements Module {
   }
 
   destroy() {
+    this.container.setAttribute('contenteditable', 'false');
     this.container.removeEventListener('input', this.handleInput);
   }
 

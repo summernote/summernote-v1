@@ -27,7 +27,7 @@ h1 {
   line-height: 1.1;
 }
 
-#app {
+#body {
   display: flex;
 }
 
@@ -41,6 +41,8 @@ h1 {
   width: 50%;
   padding: 2rem;
   border: 1px solid #eaeaea;
+  max-height: 300px;
+  overflow-y: auto;
 }
 
 @media (prefers-color-scheme: light) {

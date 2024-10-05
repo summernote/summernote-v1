@@ -1,6 +1,6 @@
 import { Observable } from '../utils/observable';
 
-export class TextModel extends Observable<string> {
+export class Model extends Observable<string> {
   private value: string;
 
   constructor(value: string) {
@@ -13,7 +13,11 @@ export class TextModel extends Observable<string> {
     this.notify(this.value);
   }
 
-  getValue(): string {
+  getValue(from?: number, to?: number): string {
+    if (from !== undefined && to !== undefined) {
+      return this.value.slice(from, to);
+    }
+
     return this.value;
   }
 
