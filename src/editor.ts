@@ -4,13 +4,15 @@ import { Observable, Unsubscribe } from './utils/observable';
 
 import { View as View } from './view/view';
 import { Model } from './model/model';
-import { Command, execute } from './commands';
+import { Command, execute, insertText } from './commands/commands';
+import { SchemaSpec, BasicSchema } from './model/schema';
 
 /**
  * `EditorOptions` is an object that contains the initial value of the editor
  *  and the plugins that should be initialized.
  */
 type EditorOptions = {
+  schema: SchemaSpec;
   initialValue?: string;
   plugins?: Array<Module>;
 };
@@ -28,7 +30,10 @@ export class Editor extends Observable<Array<Command>> implements Module {
 
   private plugins: Array<Module>;
 
-  static create(container: HTMLDivElement, opts: EditorOptions = {}) {
+  static create(
+    container: HTMLDivElement,
+    opts: EditorOptions = { schema: BasicSchema },
+  ) {
     const editor = new Editor(container, opts);
     editor.initialize();
     return editor;
@@ -38,7 +43,7 @@ export class Editor extends Observable<Array<Command>> implements Module {
     super();
 
     this.view = View.create(container);
-    this.model = Model.create(opts.initialValue || '');
+    this.model = Model.create(opts.schema, opts.initialValue || '');
     this.history = new History<Command>((command) =>
       execute(this.model, command),
     );
@@ -50,7 +55,7 @@ export class Editor extends Observable<Array<Command>> implements Module {
 
   initialize() {
     // 01. Initialize the view with the model's content.
-    this.view.setValue(this.model.getValue());
+    this.view.setValue(this.model.toXML());
 
     // 02. Upstream: view creates commands and then the editor executes them.
     this.unsubscribes.push(
@@ -63,13 +68,14 @@ export class Editor extends Observable<Array<Command>> implements Module {
 
     // 03. Downstream: If the model changes, the view should be updated.
     this.unsubscribes.push(
-      this.model.subscribe((value) => {
+      this.model.subscribe(() => {
         // Prevent downstream updates if the view is the source of change.
         if (this.isUpstream) {
           return;
         }
 
-        this.view.setValue(value);
+        // TODO(hackerwins): We need to optimize this part.
+        this.view.setValue(this.model.toXML());
       }),
     );
 
@@ -126,11 +132,11 @@ export class Editor extends Observable<Array<Command>> implements Module {
    * TODO(hackerwins): Find a better way to provide APIs.
    */
   insertText(text: string) {
-    this.execute({
-      t: 'e',
-      s: this.model.getValue().length,
-      e: this.model.getValue().length,
-      v: text,
-    });
+    let range = this.view.getSelection();
+    if (!range) {
+      range = this.model.getContentEndRange();
+    }
+
+    this.execute(insertText(range, text));
   }
 }

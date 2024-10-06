@@ -1,7 +1,8 @@
-import { Command } from '../commands';
+import { Command, splitBlock, insertText } from '../commands/commands';
 import { Module } from '../utils/module';
 import { Observable } from '../utils/observable';
-import { toRange } from './selection';
+import { Range } from '../model/types';
+import { toRange, getSelection } from './selection';
 
 /**
  * `CommonInputEventTypes` is a list of common input event types that are
@@ -48,25 +49,14 @@ export class View extends Observable<Command> implements Module {
     if (CommonInputEventTypes.includes(event.inputType)) {
       // TODO(hackerwins): We need to aggregate consecutive input events created
       // by composition text into one command.
-      const text = this.getTextFromEvent(event);
       const range = toRange(event.getTargetRanges()[0], this.container);
-      this.notify({
-        t: 'e',
-        s: range.s,
-        e: range.e,
-        v: text,
-      });
+      const text = this.getTextFromEvent(event);
+      this.notify(insertText(range, text));
     } else if (event.inputType === 'insertParagraph') {
       // TODO(hackerwins): We figure out more input types created by enter key.
       // TODO(hackerwins): We need to handle dummy br element created by enter key.
-      const text = '\n';
       const range = toRange(event.getTargetRanges()[0], this.container);
-      this.notify({
-        t: 'e',
-        s: range.s,
-        e: range.e,
-        v: text,
-      });
+      this.notify(splitBlock(range));
     }
   }
 
@@ -85,5 +75,9 @@ export class View extends Observable<Command> implements Module {
 
   setValue(value: string) {
     this.container.innerHTML = value;
+  }
+
+  getSelection(): Range | undefined {
+    return getSelection(this.container);
   }
 }
