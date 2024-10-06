@@ -3,6 +3,17 @@ import { Module } from '../utils/module';
 import { Observable } from '../utils/observable';
 import { toRange } from './selection';
 
+/**
+ * `CommonInputEventTypes` is a list of common input event types that are
+ * directly converted to edit commands.
+ */
+const CommonInputEventTypes = [
+  'insertText',
+  'insertCompositionText',
+  'deleteContentBackward',
+  'deleteContentForward',
+];
+
 export class View extends Observable<Command> implements Module {
   private container: HTMLDivElement;
 
@@ -33,15 +44,29 @@ export class View extends Observable<Command> implements Module {
   }
 
   handleBeforeInput(event: InputEvent) {
-    const text = this.getTextFromEvent(event);
-    // TODO(hackerwins): We need to capture enter key as well.
-    const range = toRange(event.getTargetRanges()[0], this.container);
-    this.notify({
-      t: 'e',
-      s: range.s,
-      e: range.e,
-      v: text,
-    });
+    if (CommonInputEventTypes.includes(event.inputType)) {
+      // TODO(hackerwins): We need to aggregate consecutive input events created
+      // by composition text into one command.
+      const text = this.getTextFromEvent(event);
+      const range = toRange(event.getTargetRanges()[0], this.container);
+      this.notify({
+        t: 'e',
+        s: range.s,
+        e: range.e,
+        v: text,
+      });
+    } else if (event.inputType === 'insertParagraph') {
+      // TODO(hackerwins): We figure out more input types created by enter key.
+      // TODO(hackerwins): We need to handle dummy br element created by enter key.
+      const text = '\n';
+      const range = toRange(event.getTargetRanges()[0], this.container);
+      this.notify({
+        t: 'e',
+        s: range.s,
+        e: range.e,
+        v: text,
+      });
+    }
   }
 
   initialize() {

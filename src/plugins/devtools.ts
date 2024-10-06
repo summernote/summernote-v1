@@ -21,7 +21,7 @@ export class Devtools implements Module {
   initialize(editor: Editor) {
     this.unsubscribe = editor.subscribe(() => {
       this.render(
-        `v:${editor.getModel().getValue()}\nh:${editor.getHistory().toJSON()}`,
+        `${editor.getModel().getValue()}\n${editor.getHistory().toJSON()}`,
       );
     });
   }
