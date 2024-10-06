@@ -9,6 +9,7 @@ import { toRange } from './selection';
  */
 const CommonInputEventTypes = [
   'insertText',
+  'insertReplacementText',
   'insertCompositionText',
   'deleteContentBackward',
   'deleteContentForward',

@@ -3,7 +3,7 @@ import { Module } from './utils/module';
 import { Observable, Unsubscribe } from './utils/observable';
 
 import { View as View } from './view/view';
-import { Model } from './model';
+import { Model } from './model/model';
 import { Command, execute } from './commands';
 
 /**
@@ -38,7 +38,7 @@ export class Editor extends Observable<Array<Command>> implements Module {
     super();
 
     this.view = View.create(container);
-    this.model = new Model(opts.initialValue || '');
+    this.model = Model.create(opts.initialValue || '');
     this.history = new History<Command>((command) =>
       execute(this.model, command),
     );

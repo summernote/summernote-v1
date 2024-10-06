@@ -1,7 +1,12 @@
-import { Observable } from './utils/observable';
+import { Observable } from '../utils/observable';
 
+// TODO(hackerwins): Build a tree-based model with schema validation.
 export class Model extends Observable<string> {
   private value: string;
+
+  static create(initialValue: string): Model {
+    return new Model(initialValue);
+  }
 
   constructor(value: string) {
     super();
