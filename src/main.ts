@@ -6,7 +6,12 @@ import { Devtools } from './plugins/devtools';
 const editor = Editor.create(
   document.querySelector<HTMLDivElement>('#editor')!,
   {
-    initialValue: 'Hello,',
+    initialValue: '<p>Hello,</p>',
+    schema: {
+      root: { children: 'p*' },
+      p: { children: 'text*' },
+      text: {},
+    },
     plugins: [
       Toolbar.create(document.querySelector<HTMLDivElement>('#toolbar')!, {
         buttons: ['destroy', 'undo', 'redo'],
